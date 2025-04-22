@@ -1,0 +1,241 @@
+openapi: 3.0.3
+info:
+  title: "Universal LLM Gateway API"
+  version: "1.0.0"
+  description: >
+    A provider‑agnostic gateway to chat, embeddings, image generation,
+    and function/tool calling across OpenAI, Azure, Anthropic,
+    AWS Bedrock, and Ollama.
+
+servers:
+  - url: https://api.yourgateway.example.com
+    description: Production server
+
+security:
+  - ApiKeyAuth: []
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  schemas:
+    Role:
+      type: string
+      enum:
+        - system
+        - user
+        - assistant
+        - function    # for returning function results
+        - tool        # for Ollama-native tools
+
+    Message:
+      type: object
+      required: [role]
+      properties:
+        role:
+          $ref: '#/components/schemas/Role'
+        name:
+          type: string
+          description: >
+            function or tool name when role is "function" or "tool"
+        content:
+          type: string
+          description: text content or serialized JSON args/results
+
+    FunctionDef:
+      type: object
+      required: [name, description, parameters]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        parameters:
+          # We’ll allow any valid JSON Schema here
+          type: object
+          description: >
+            JSON Schema definition of the function/tool arguments.
+
+    Usage:
+      type: object
+      properties:
+        prompt_tokens:
+          type: integer
+        completion_tokens:
+          type: integer
+        total_tokens:
+          type: integer
+
+    ChatRequest:
+      type: object
+      required: [provider, model, messages]
+      properties:
+        provider:
+          type: string
+          enum: [openai, azure, anthropic, bedrock, ollama]
+        model:
+          type: string
+          description: Provider‑specific model identifier
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+        functions:
+          type: array
+          items:
+            $ref: '#/components/schemas/FunctionDef'
+          description: Optional function/tool definitions
+        temperature:
+          type: number
+          default: 1.0
+        max_tokens:
+          type: integer
+        top_p:
+          type: number
+          default: 1.0
+        stream:
+          type: boolean
+          default: false
+
+    ChatResponse:
+      type: object
+      properties:
+        message:
+          $ref: '#/components/schemas/Message'
+        usage:
+          $ref: '#/components/schemas/Usage'
+        finish_reason:
+          type: string
+          enum: [stop, function_call, length]
+
+    EmbedRequest:
+      type: object
+      required: [provider, model, input]
+      properties:
+        provider:
+          type: string
+          enum: [openai, azure, bedrock, ollama]
+        model:
+          type: string
+        input:
+          type: array
+          items:
+            type: string
+
+    EmbedResponse:
+      type: object
+      properties:
+        embeddings:
+          type: array
+          items:
+            type: array
+            items:
+              type: number
+        usage:
+          $ref: '#/components/schemas/Usage'
+
+    ImageRequest:
+      type: object
+      required: [provider, model, prompt]
+      properties:
+        provider:
+          type: string
+          enum: [openai, azure, bedrock]
+        model:
+          type: string
+          description: e.g. “dall-e-3” or Bedrock SDXL ARN
+        prompt:
+          type: string
+        size:
+          type: string
+          enum: [256x256, 512x512, 1024x1024]
+          default: 512x512
+        n:
+          type: integer
+          default: 1
+        params:
+          type: object
+          description: Provider‑specific extras (e.g. cfg_scale, steps)
+
+paths:
+
+  /chat:
+    post:
+      summary: Synchronous chat completion
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+      responses:
+        '200':
+          description: Chat response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+
+  /chat/stream:
+    post:
+      summary: Streaming chat completion (SSE)
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+      responses:
+        '200':
+          description: Server-Sent Events stream of partial tokens
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                description: SSE data chunks
+
+  /embed:
+    post:
+      summary: Text embeddings
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmbedRequest'
+      responses:
+        '200':
+          description: Embedding vectors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmbedResponse'
+
+  /image:
+    post:
+      summary: Image generation (returns raw bytes)
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImageRequest'
+      responses:
+        '200':
+          description: Image bytes (single image)
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
