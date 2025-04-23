@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # 1. Gateway tests
+  gateway:
+    name: Gateway Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Install dependencies
+        working-directory: gateway
+        run: poetry install --no-root
+
+      - name: Run Gateway tests
+        working-directory: gateway
+        run: poetry run pytest --maxfail=1 --disable-warnings -q
+
+  # 2. Python client tests
+  python-client:
+    name: Python Client Tests
+    runs-on: ubuntu-latest
+    needs: gateway
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - run: pip install poetry
+
+      - name: Install Python client deps
+        working-directory: clients/python-client
+        run: poetry install --no-root
+
+      - name: Run Python client tests
+        working-directory: clients/python-client
+        run: poetry run pytest --maxfail=1 --disable-warnings -q
+
+  # 3. .NET client tests
+  dotnet-client:
+    name: .NET Client Tests
+    runs-on: ubuntu-latest
+    needs: [gateway, python-client]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore & Build & Test
+        run: dotnet test clients/dotnet-client/LlmGateway.sln --no-restore --verbosity normal
+
+  # 4. React/TypeScript client tests & build
+  react-client:
+    name: React/TS Client Tests
+    runs-on: ubuntu-latest
+    needs: [gateway, python-client]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+
+      - name: Install dependencies
+        working-directory: clients/react-client
+        run: npm ci
+
+      - name: Run React client tests
+        working-directory: clients/react-client
+        run: npm test
+
+      - name: Build React client
+        working-directory: clients/react-client
+        run: npm run build 
