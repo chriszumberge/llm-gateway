@@ -18,7 +18,7 @@ WORKDIR /app
 COPY pyproject.toml poetry.lock* /app/
 
 # Install runtime deps into the image
-RUN /opt/poetry/bin/poetry install --only main
+RUN /opt/poetry/bin/poetry install --only main --no-root
 
 # ── Stage 2: copy code and run ─────────────────────────────────
 FROM python:3.10-slim
