@@ -112,4 +112,58 @@ jobs:
 
       - name: Build React client
         working-directory: clients/react-client
-        run: npm run build 
+        run: npm run build
+
+  # 5. Integration tests
+  integration:
+    name: 🔗 Integration Tests
+    runs-on: ubuntu-latest
+    needs: [gateway, python-client, dotnet-client, react-client]
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
+
+      - name: Start the Gateway via Docker Compose
+        working-directory: gateway
+        run: docker compose up -d
+
+      - name: Wait for Gateway to become healthy
+        run: |
+          for i in $(seq 1 30); do
+            if curl --silent --fail http://localhost:8000/chat -d '{}' -H 'Content-Type: application/json'; then
+              echo "Gateway is up!"
+              exit 0
+            fi
+            echo "Waiting for gateway..."
+            sleep 1
+          done
+          echo "Gateway failed to start" >&2
+          exit 1
+
+      - name: Run Python example
+        working-directory: clients/python-client
+        run: |
+          # Install the client in editable mode
+          pip install -e .
+          # Execute the example script
+          python ../../examples/python_example.py
+
+      - name: Run .NET example
+        working-directory: tests/examples/dotnet-console
+        run: |
+          # Build & run the C# console that calls the gateway
+          dotnet run --no-build
+
+      - name: Run Node/TS example
+        working-directory: clients/react-client
+        run: |
+          npm ci
+          # Compile the TS example into JS
+          npx tsc --outDir ../../examples/node-dist src/examples/node_example.ts
+          # Execute with node
+          node ../../examples/node-dist/node_example.js 
