@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "llm-gateway-client"
+version = "0.1.0"
+description = "Python client for Universal LLM Gateway"
+authors = ["Christopher Zumberge <chriszumberge@gmail.com>"]
+packages = [{ include = "llm_gateway", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+httpx = "^0.23.0"
+pydantic = "^2.0.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api" 
