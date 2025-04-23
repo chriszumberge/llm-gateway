@@ -11,12 +11,12 @@ def handle_chat(req: ChatRequest) -> ChatResponse:
     })
     r.raise_for_status()
     data = r.json()
-    msg = data["choices"][0]["message"]
+    # Ollama returns message directly, not in choices array
     return ChatResponse(
-        role=msg["role"],
-        content=msg["content"],
-        name=msg.get("name"),
-        finish_reason=data["choices"][0].get("finish_reason"),
+        role=data["message"]["role"],
+        content=data["message"]["content"],
+        name=data["message"].get("name"),
+        finish_reason="stop" if data.get("done") else None,
         usage=None,
     )
 
@@ -37,7 +37,8 @@ def handle_embed(req: EmbedRequest) -> EmbedResponse:
     })
     r.raise_for_status()
     data = r.json()
-    return EmbedResponse(embeddings=data["embeddings"], usage=None)
+    # Ollama returns embedding directly, not in embeddings array
+    return EmbedResponse(embeddings=[data["embedding"]], usage=None)
 
 def handle_image(req: ImageRequest) -> bytes:
     # Ollama doesn't support image gen—raise

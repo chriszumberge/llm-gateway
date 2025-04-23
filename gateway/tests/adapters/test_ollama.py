@@ -21,7 +21,7 @@ def test_handle_chat(monkeypatch):
     resp = adapter.handle_chat(req)
     assert resp.content == "hi"
     assert resp.finish_reason == "stop"
-    assert resp.usage["total_tokens"] == 0  # Ollama doesn't provide token counts
+    assert resp.usage is None
 
 def test_stream_chat(monkeypatch):
     def fake_stream(*args, **kwargs):
@@ -43,7 +43,7 @@ def test_handle_embed(monkeypatch):
     req = EmbedRequest(provider="ollama", model="llama2", input=["a"])
     resp = adapter.handle_embed(req)
     assert resp.embeddings == [[0.1, 0.2]]
-    assert resp.usage["total_tokens"] == 0  # Ollama doesn't provide token counts
+    assert resp.usage is None
 
 def test_handle_image_not_implemented():
     req = ImageRequest(provider="ollama", model="llama2", prompt="test")
