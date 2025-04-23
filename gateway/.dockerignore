@@ -1,0 +1,34 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+
+# Poetry, virtual envs, caches
+.venv/
+.env
+poetry.lock
+
+# Git
+.git/
+
+# Tests and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/ 
+
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.venv
+env
+.git
+.gitignore
+.gitlab-ci.yml
+Dockerfile
+docker-compose.yml
+*.log
