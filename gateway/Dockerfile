@@ -32,7 +32,9 @@ WORKDIR /app
 # Copy our installed packages and source
 COPY --from=builder /usr/local/lib/python3.10 /usr/local/lib/python3.10
 COPY src/ /app/src
-COPY .env /app/.env        # if you want to bake in defaults; otherwise mount at runtime
+
+# Create an empty .env file if it doesn't exist
+RUN touch /app/.env
 
 # Expose port
 EXPOSE 8000
