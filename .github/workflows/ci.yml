@@ -128,35 +128,21 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y docker-compose
 
-      - name: Create .env file
-        working-directory: gateway
-        run: |
-          cat > .env << EOF
-          # OpenAI Configuration
-          OPENAI_API_KEY=\${OPENAI_API_KEY}
-
-          # Azure OpenAI Configuration
-          AZURE_OPENAI_ENDPOINT=\${AZURE_OPENAI_ENDPOINT}
-          AZURE_OPENAI_KEY=\${AZURE_OPENAI_KEY}
-          AZURE_OPENAI_API_VERSION=\${AZURE_OPENAI_API_VERSION}
-
-          # Anthropic Configuration
-          ANTHROPIC_API_KEY=\${ANTHROPIC_API_KEY}
-          ANTHROPIC_API_VERSION=\${ANTHROPIC_API_VERSION}
-
-          # AWS Configuration
-          AWS_ACCESS_KEY_ID=\${AWS_ACCESS_KEY_ID}
-          AWS_SECRET_ACCESS_KEY=\${AWS_SECRET_ACCESS_KEY}
-          AWS_DEFAULT_REGION=\${AWS_DEFAULT_REGION}
-
-          # Gateway Configuration
-          PORT=8000
-          HOST=0.0.0.0
-          LOG_LEVEL=INFO
-          EOF
-
       - name: Start the Gateway via Docker Compose
         working-directory: gateway
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+          AZURE_OPENAI_KEY: ${{ secrets.AZURE_OPENAI_KEY }}
+          AZURE_OPENAI_API_VERSION: ${{ secrets.AZURE_OPENAI_API_VERSION }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_API_VERSION: ${{ secrets.ANTHROPIC_API_VERSION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          PORT: 8000
+          HOST: 0.0.0.0
+          LOG_LEVEL: INFO
         run: docker compose up -d
 
       - name: Wait for Gateway to become healthy
