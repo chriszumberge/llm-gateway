@@ -20,12 +20,12 @@ HEADERS = {
 }
 
 def handle_chat(req: ChatRequest) -> ChatResponse:
-    url = f"{BASE_URL}/chat/completions"
+    url = f"{BASE_URL}/messages"
     # Claude v2+ uses messages array
     body = {
         "model": req.model,
         "messages": [m.dict(exclude_none=True) for m in req.messages],
-        "max_tokens_to_sample": req.max_tokens or 1000,
+        "max_tokens": req.max_tokens or 1000,
         "temperature": req.temperature,
         "top_p": req.top_p,
     }
@@ -44,26 +44,26 @@ def handle_chat(req: ChatRequest) -> ChatResponse:
     r.raise_for_status()
     data = r.json()
 
-    # Claude returns `completion` text in `completion` field
-    text = data["completion"]
-    # Detect tool use in `data["stop_reason"] == "tool"` or in a content block
+    # Claude returns content in the content array
+    content = data["content"][0]["text"]
+    # Detect tool use in stop_reason
     finish = data.get("stop_reason")
     # Anthropic doesn't give usage currently in v2
     return ChatResponse(
         role="assistant",
-        content=text,
+        content=content,
         name=None,
         finish_reason=finish,
         usage=None,
     )
 
 def stream_chat(req: ChatRequest):
-    url = f"{BASE_URL}/chat/completions"
+    url = f"{BASE_URL}/messages"
     body = {
         "model": req.model,
         "messages": [m.dict(exclude_none=True) for m in req.messages],
         "stream": True,
-        "max_tokens_to_sample": req.max_tokens or 1000,
+        "max_tokens": req.max_tokens or 1000,
         "temperature": req.temperature,
         "top_p": req.top_p,
     }
