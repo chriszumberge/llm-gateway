@@ -20,7 +20,7 @@ def _get_adapter(provider: str):
 @router.route("/chat", methods=["POST"])
 def chat():
     # Validate incoming JSON against our Pydantic model
-    req = ChatRequest.parse_obj(request.get_json())
+    req = ChatRequest.model_validate(request.get_json())
     # Get the appropriate adapter based on provider
     adapter = _get_adapter(req.provider)
     resp = adapter.handle_chat(req)
@@ -29,7 +29,7 @@ def chat():
 
 @router.route("/chat/stream", methods=["POST"])
 def chat_stream():
-    req = ChatRequest.parse_obj(request.get_json())
+    req = ChatRequest.model_validate(request.get_json())
     adapter = _get_adapter(req.provider)
     # This should be a generator of SSE-formatted data
     return Response(
@@ -39,14 +39,14 @@ def chat_stream():
 
 @router.route("/embed", methods=["POST"])
 def embed():
-    req = EmbedRequest.parse_obj(request.get_json())
+    req = EmbedRequest.model_validate(request.get_json())
     adapter = _get_adapter(req.provider)
     resp = adapter.handle_embed(req)
     return jsonify(resp.dict())
 
 @router.route("/image", methods=["POST"])
 def image():
-    req = ImageRequest.parse_obj(request.get_json())
+    req = ImageRequest.model_validate(request.get_json())
     adapter = _get_adapter(req.provider)
     # Return raw image bytes
     image_bytes = adapter.handle_image(req)
