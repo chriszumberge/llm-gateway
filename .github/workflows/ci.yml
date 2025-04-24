@@ -156,6 +156,8 @@ jobs:
             sleep 1
           done
           echo "Gateway failed to start" >&2
+          echo "Gateway logs:"
+          docker compose -f ../docker-compose.ci.yml logs gateway
           exit 1
 
       - name: Run Python example
