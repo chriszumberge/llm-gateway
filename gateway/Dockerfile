@@ -18,7 +18,7 @@ WORKDIR /app
 COPY pyproject.toml poetry.lock* /app/
 
 # Install runtime deps into the image
-RUN /opt/poetry/bin/poetry install --only main
+RUN /opt/poetry/bin/poetry install --only main --no-root
 
 # ── Stage 2: copy code and run ─────────────────────────────────
 FROM python:3.10-slim
@@ -31,13 +31,10 @@ WORKDIR /app
 
 # Copy our installed packages and source
 COPY --from=builder /usr/local/lib/python3.10 /usr/local/lib/python3.10
-COPY . /app/
+COPY src/ /app/src
 
 # Create an empty .env file if it doesn't exist
 RUN touch /app/.env
-
-# Install the gateway package in development mode
-RUN poetry install --only main
 
 # Expose port
 EXPOSE 8000
