@@ -31,10 +31,13 @@ WORKDIR /app
 
 # Copy our installed packages and source
 COPY --from=builder /usr/local/lib/python3.10 /usr/local/lib/python3.10
-COPY src/ /app/src
+COPY . /app/
 
 # Create an empty .env file if it doesn't exist
 RUN touch /app/.env
+
+# Install the gateway package in development mode
+RUN poetry install --only main
 
 # Expose port
 EXPOSE 8000
