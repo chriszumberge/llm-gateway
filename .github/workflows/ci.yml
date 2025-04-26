@@ -193,4 +193,4 @@ jobs:
           # Compile the TS example into JS
           npx tsc --outDir ../../examples/node-dist src/examples/node_example.ts
           # Execute with node
-          node ../../examples/node-dist/node_example.js 
+          node ../../examples/node-dist/src/examples/node_example.js 
