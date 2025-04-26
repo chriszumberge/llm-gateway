@@ -114,15 +114,6 @@ jobs:
         working-directory: clients/react-client
         run: npm run build
 
-      - name: Run Node/TS example
-        working-directory: clients/react-client
-        run: |
-          npm ci
-          # Compile the TS example into JS
-          npx tsc --outDir dist src/examples/node_example.ts
-          # Execute with node
-          node dist/examples/node_example.js
-
   # 5. Integration tests
   integration:
     name: Integration Tests
@@ -200,6 +191,6 @@ jobs:
         run: |
           npm ci
           # Compile the TS example into JS
-          npx tsc --outDir dist src/examples/node_example.ts
+          npx tsc --outDir ../../examples/node-dist src/examples/node_example.ts
           # Execute with node
-          node dist/examples/node_example.js 
+          node ../../examples/node-dist/src/examples/node_example.js 
