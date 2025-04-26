@@ -17,6 +17,11 @@ def _get_adapter(provider: str):
         "ollama": ollama_adapter,
     }[provider]
 
+@router.route("/health", methods=["GET"])
+def health():
+    # Simple health check endpoint used by CI to verify the server is running
+    return jsonify({"status": "ok"}), 200
+
 @router.route("/chat", methods=["POST"])
 def chat():
     # Validate incoming JSON against our Pydantic model
