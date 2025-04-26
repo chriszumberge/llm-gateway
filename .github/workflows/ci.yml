@@ -191,8 +191,8 @@ jobs:
         run: |
           npm ci
           # Create output directory
-          mkdir -p ../../examples/node-dist
+          mkdir -p dist
           # Compile the TS example into JS
-          npx tsc --outDir ../../examples/node-dist src/examples/node_example.ts
+          npx tsc
           # Execute with node
-          node ../../examples/node-dist/node_example.js 
+          node dist/examples/node_example.js 
