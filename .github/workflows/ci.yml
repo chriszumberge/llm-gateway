@@ -184,7 +184,7 @@ jobs:
         working-directory: tests/examples/dotnet-console
         run: |
           # Build & run the C# console that calls the gateway
-          dotnet run --no-build
+          dotnet run
 
       - name: Run Node/TS example
         working-directory: clients/react-client
