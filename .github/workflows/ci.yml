@@ -114,6 +114,17 @@ jobs:
         working-directory: clients/react-client
         run: npm run build
 
+      - name: Run Node/TS example
+        working-directory: clients/react-client
+        run: |
+          npm ci
+          # Create dist directory if it doesn't exist
+          mkdir -p dist/examples
+          # Compile the TS example into JS
+          npx tsc --outDir dist/examples src/examples/node_example.ts
+          # Execute with node
+          node dist/examples/node_example.js
+
   # 5. Integration tests
   integration:
     name: Integration Tests
@@ -190,7 +201,9 @@ jobs:
         working-directory: clients/react-client
         run: |
           npm ci
+          # Create dist directory if it doesn't exist
+          mkdir -p dist/examples
           # Compile the TS example into JS
-          npx tsc --outDir ../../examples/node-dist src/examples/node_example.ts
+          npx tsc --outDir dist/examples src/examples/node_example.ts
           # Execute with node
-          node ../../examples/node-dist/src/examples/node_example.js 
+          node dist/examples/node_example.js 
